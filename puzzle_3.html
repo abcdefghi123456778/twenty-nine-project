@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle 3</title>
+    <title>Puzzle 1</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
         }
     
         html { font-size: 62.5%; }
@@ -55,6 +56,7 @@
             background-repeat: no-repeat;
             position: absolute;
             cursor: grab;
+            user-select: none;
         }
     
         .final-img {
@@ -73,18 +75,18 @@
             left: 10px;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 15px 30px; /* Aumenta il padding per rendere il bottone più grande */
+            padding: 15px 30px;
             border-radius: 5px;
-            font-size: 1.5em; /* Aumenta la dimensione del testo */
+            font-size: 1.5em;
             text-decoration: none;
             z-index: 1000;
             transition: background-color 0.3s, color 0.3s;
-            font-family: Sans-serif; /* Usa il font Sans-serif */
+            font-family: Sans-serif;
         }
     
         .back-button:hover {
             background-color: rgba(0, 0, 0, 0.9);
-            color: #FFD700; /* Cambia il colore del testo quando si passa sopra con il cursore */
+            color: #FFD700;
         }
     </style>
 </head>
@@ -105,6 +107,7 @@
             const pieceSize = shuffledPieces.clientWidth / gridSize;
             let pieces = [];
             let placedPieces = new Map();
+            let activePiece = null;
 
             function createPuzzlePieces() {
                 for (let i = 0; i < gridSize * gridSize; i++) {
@@ -116,6 +119,11 @@
                     piece.style.top = `${Math.random() * (shuffledPieces.clientHeight - pieceSize)}px`;
                     piece.draggable = true;
                     piece.dataset.index = i;
+                    
+                    piece.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    piece.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    piece.addEventListener('touchend', handleTouchEnd);
+                    
                     shuffledPieces.appendChild(piece);
                     pieces.push(piece);
                 }
@@ -128,19 +136,98 @@
                     cell.style.height = `${pieceSize}px`;
                     cell.style.border = "0.1rem dashed #fff";
                     cell.dataset.index = i;
+                    
+                    cell.addEventListener('touchend', handleTouchEnd);
+                    
                     puzzleGrid.appendChild(cell);
                 }
             }
 
+            // ===== GESTIONE TOUCH =====
+            function handleTouchStart(e) {
+                e.preventDefault();
+                activePiece = e.target;
+                const touch = e.touches[0];
+                activePiece.touchOffsetX = touch.clientX - activePiece.offsetLeft;
+                activePiece.touchOffsetY = touch.clientY - activePiece.offsetTop;
+            }
+
+            function handleTouchMove(e) {
+                if (!activePiece) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                activePiece.style.left = `${touch.clientX - activePiece.touchOffsetX}px`;
+                activePiece.style.top = `${touch.clientY - activePiece.touchOffsetY}px`;
+            }
+
+            function handleTouchEnd(e) {
+                if (!activePiece) return;
+                const touch = e.changedTouches[0];
+                const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (dropTarget && dropTarget.dataset.index !== undefined) {
+                    const targetCell = dropTarget.classList.contains('puzzle-grid') ? 
+                        findNearestCell(touch.clientX, touch.clientY) : 
+                        dropTarget;
+                    
+                    if (targetCell) {
+                        placePieceInCell(activePiece, targetCell);
+                    } else {
+                        returnToOriginalPosition(activePiece);
+                    }
+                } else {
+                    returnToOriginalPosition(activePiece);
+                }
+                activePiece = null;
+            }
+
+            function returnToOriginalPosition(piece) {
+                if (piece.parentElement === puzzleGrid) {
+                    // Se il pezzo viene dalla griglia, rimettilo nella sua cella originale
+                    const originalCell = puzzleGrid.querySelector(`div[data-piece-index="${piece.dataset.index}"]`);
+                    if (originalCell) {
+                        placePieceInCell(piece, originalCell);
+                    }
+                } else {
+                    // Se il pezzo viene dall'area di partenza, rimettilo a caso
+                    piece.style.left = `${Math.random() * (shuffledPieces.clientWidth - pieceSize)}px`;
+                    piece.style.top = `${Math.random() * (shuffledPieces.clientHeight - pieceSize)}px`;
+                    shuffledPieces.appendChild(piece);
+                }
+            }
+
+            function findNearestCell(x, y) {
+                const cells = puzzleGrid.querySelectorAll('div[data-index]');
+                let nearestCell = null;
+                let minDistance = Infinity;
+                
+                cells.forEach(cell => {
+                    const rect = cell.getBoundingClientRect();
+                    const centerX = rect.left + rect.width/2;
+                    const centerY = rect.top + rect.height/2;
+                    const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestCell = cell;
+                    }
+                });
+                
+                return nearestCell;
+            }
+
+            // ===== GESTIONE DRAG AND DROP (DESKTOP) =====
             shuffledPieces.addEventListener("dragstart", (e) => {
                 if (e.target.classList.contains("puzzle-piece")) {
                     e.dataTransfer.setData("index", e.target.dataset.index);
+                    e.dataTransfer.setData("source", "shuffled");
                 }
             });
 
             puzzleGrid.addEventListener("dragstart", (e) => {
                 if (e.target.classList.contains("puzzle-piece")) {
                     e.dataTransfer.setData("index", e.target.dataset.index);
+                    e.dataTransfer.setData("source", "grid");
                     e.dataTransfer.setData("parentCellIndex", e.target.parentElement.dataset.index);
                 }
             });
@@ -150,34 +237,74 @@
             });
 
             puzzleGrid.addEventListener("drop", (e) => {
+                e.preventDefault();
                 const index = e.dataTransfer.getData("index");
+                const source = e.dataTransfer.getData("source");
                 const piece = pieces.find(p => p.dataset.index === index);
                 const targetCell = e.target;
 
                 if (targetCell.classList.contains("puzzle-grid") || !targetCell.dataset.index) return;
 
-                const parentCellIndex = e.dataTransfer.getData("parentCellIndex");
-                if (parentCellIndex) {
-                    const parentCell = puzzleGrid.querySelector(`div[data-index="${parentCellIndex}"]`);
-                    if (parentCell) {
-                        parentCell.innerHTML = "";
+                // Se il pezzo viene dalla griglia, pulisci la cella originale
+                if (source === "grid") {
+                    const parentCellIndex = e.dataTransfer.getData("parentCellIndex");
+                    if (parentCellIndex) {
+                        const parentCell = puzzleGrid.querySelector(`div[data-index="${parentCellIndex}"]`);
+                        if (parentCell && parentCell !== targetCell) {
+                            parentCell.innerHTML = "";
+                            parentCell.removeAttribute("data-piece-index");
+                        }
                     }
                 }
 
-                piece.style.position = 'absolute';
-                piece.style.left = `${targetCell.offsetLeft}px`;
-                piece.style.top = `${targetCell.offsetTop}px`;
-                targetCell.appendChild(piece);
-                targetCell.dataset.pieceIndex = index;
+                // Se la cella target ha già un pezzo, scambiali
+                if (targetCell.firstChild) {
+                    const existingPiece = targetCell.firstChild;
+                    const parentCellIndex = e.dataTransfer.getData("parentCellIndex");
+                    
+                    if (parentCellIndex) {
+                        const parentCell = puzzleGrid.querySelector(`div[data-index="${parentCellIndex}"]`);
+                        if (parentCell) {
+                            placePieceInCell(existingPiece, parentCell);
+                        }
+                    } else {
+                        // Se non c'è una cella originale (dovrebbe essere impossibile)
+                        existingPiece.style.left = `${Math.random() * (shuffledPieces.clientWidth - pieceSize)}px`;
+                        existingPiece.style.top = `${Math.random() * (shuffledPieces.clientHeight - pieceSize)}px`;
+                        shuffledPieces.appendChild(existingPiece);
+                        placedPieces.delete(parseInt(existingPiece.dataset.index));
+                    }
+                }
 
-                placedPieces.set(parseInt(index), targetCell.dataset.index === index);
-
-                checkWinCondition();
+                placePieceInCell(piece, targetCell);
             });
+
+            function placePieceInCell(piece, cell) {
+                // Rimuovi il pezzo dalla posizione precedente
+                if (piece.parentElement === puzzleGrid) {
+                    const prevCell = piece.parentElement;
+                    if (prevCell !== cell) {
+                        prevCell.innerHTML = "";
+                        prevCell.removeAttribute("data-piece-index");
+                    }
+                }
+                
+                // Posiziona il pezzo nella nuova cella
+                piece.style.position = 'absolute';
+                piece.style.left = `${cell.offsetLeft}px`;
+                piece.style.top = `${cell.offsetTop}px`;
+                cell.appendChild(piece);
+                cell.dataset.pieceIndex = piece.dataset.index;
+                
+                // Aggiorna la mappa dei pezzi piazzati correttamente
+                placedPieces.set(parseInt(piece.dataset.index), cell.dataset.index === piece.dataset.index);
+                
+                checkWinCondition();
+            }
 
             function checkWinCondition() {
                 if ([...placedPieces.values()].every((val) => val === true) && placedPieces.size === gridSize * gridSize) {
-                    window.location.href = "fiori.html"; // Reindirizza alla pagina fiori.html
+                    window.location.href = "fiori.html";
                 }
             }
 
