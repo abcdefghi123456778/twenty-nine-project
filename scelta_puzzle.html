@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Scelta puzzle</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #1C1C1B;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .back-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            text-decoration: none;
+            z-index: 1000;
+            transition: background-color 0.3s, color 0.3s;
+            font-family: Sans-serif; /* Aggiungi questa riga per usare il font Sans-serif */
+        }
+
+        .back-button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #FFD700; /* Cambia il colore del testo quando si passa sopra con il cursore */
+        }
+        .container {
+            display: flex;
+            gap: 10px;
+        }
+        .container a {
+            display: inline-block;
+        }
+        .container img {
+            width: 200px;
+            height: 550px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.684);
+            transition: all ease-in-out 0.5s;
+        }
+        .container img:hover {
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">Torna alla Home</a>
+    <div class="container">
+        <a href="puzzle_1.html">
+            <img src="foto1.jpg" alt="Foto 1">
+        </a>
+        <a href="puzzle_2.html">
+            <img src="foto2.jpg" alt="Foto 2">
+        </a>
+        <a href="puzzle_3.html">
+            <img src="foto3.jpg" alt="Foto 3">
+        </a>
+        <a href="puzzle_4.html">
+            <img src="foto4.jpg" alt="Foto 4">
+        </a>
+    </div>
+</body>
+</html>

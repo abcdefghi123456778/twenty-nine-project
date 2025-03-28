@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .corner {
+            position: absolute;
+        }
+        .top-left { top: 55px; left: 65px; }
+        .top-right { top: 55px; right: 65px; }
+        .bottom-left { bottom: 55px; left: 65px; }
+        .bottom-right { bottom: 55px; right: 65px; }
+        
+        .center-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 110vh;
+            margin: 0;
+            position: relative;
+            flex-direction: column;
+            z-index: 1; /* Ensure the buttons are above the canvas */
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #1C1C1B;
+        }
+
+        canvas {
+            position: absolute;
+            z-index: 0; /* Ensure the canvas is behind the buttons */
+        }
+
+        .heart-link {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            text-decoration: none;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            width: 130px;
+            margin-top: 10px; /* Add margin to separate buttons */
+            z-index: 2; /* Ensure the buttons are above the canvas */
+        }
+
+        .heart-link:hover {
+            background-color: rgba(255, 215, 0, 0.7);
+            color: black;
+        }
+
+        .fotoa{
+            transform: rotate(45deg);
+        }
+        .fotob{
+            transform: rotate(-45deg);
+        }
+        .fotoc{
+            transform: rotate(-45deg);
+        }
+        .fotod{
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="corner top-left"><img src="foto_home1.jpg" alt="Ti amo" width="175px" class="fotoa"></div>
+    <div class="corner top-right"><img src="foto_home2.jpg" alt="Ti amo" width="175px" class="fotob"></div>
+    <div class="corner bottom-left"><img src="foto_home3.jpg" alt="Ti amo" width="175px" class="fotoc"></div>
+    <div class="corner bottom-right"><img src="foto_home4.jpg" alt="Ti amo" width="175px" class="fotod"></div>
+
+    <div class="center-title">
+        <canvas id="canvas"></canvas>
+        <a class="heart-link" href="scelta_puzzle.html">Puzzle</a>
+        <a class="heart-link" href="memory.html">Memory</a>
+        <a class="heart-link" href="galleria.html">Galleria</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const numParticles = 500;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        let exploding = false;
+
+        function heartEquation(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            return { x: x * 15, y: -y * 15 };
+        }
+
+        function createHeartShape() {
+            for (let i = 0; i < numParticles; i++) {
+                const t = Math.random() * Math.PI * 2;
+                const pos = heartEquation(t);
+                particles.push({
+                    x: centerX + pos.x,
+                    y: centerY + pos.y,
+                    originalX: centerX + pos.x,
+                    originalY: centerY + pos.y,
+                    radius: Math.random() * 3 + 2,
+                    color: "#FFD700",
+                    velocityX: 0,
+                    velocityY: 0
+                });
+            }
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let p of particles) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function updateParticles() {
+            for (let p of particles) {
+                if (exploding) {
+                    p.x += p.velocityX;
+                    p.y += p.velocityY;
+                } else {
+                    p.x += (p.originalX - p.x) * 0.1;
+                    p.y += (p.originalY - p.y) * 0.1;
+                }
+            }
+        }
+
+        function explodeHeart() {
+            exploding = true;
+            for (let p of particles) {
+                p.velocityX = (Math.random() - 0.5) * 20;
+                p.velocityY = (Math.random() - 0.5) * 20;
+            }
+            setTimeout(() => {
+                exploding = false;
+            }, 1000);
+        }
+
+        canvas.addEventListener("mousemove", explodeHeart);
+
+        function animate() {
+            updateParticles();
+            drawParticles();
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = () => {
+            createHeartShape();
+            animate();
+        };
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+    </script>
+</body>
+</html>
