@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle 4</title>
+    <title>Puzzle 1</title>
     <style>
         * {
             margin: 0;
@@ -183,11 +183,13 @@
 
             function returnToOriginalPosition(piece) {
                 if (piece.parentElement === puzzleGrid) {
+                    // Se il pezzo viene dalla griglia, rimettilo nella sua cella originale
                     const originalCell = puzzleGrid.querySelector(`div[data-piece-index="${piece.dataset.index}"]`);
                     if (originalCell) {
                         placePieceInCell(piece, originalCell);
                     }
                 } else {
+                    // Se il pezzo viene dall'area di partenza, rimettilo a caso
                     piece.style.left = `${Math.random() * (shuffledPieces.clientWidth - pieceSize)}px`;
                     piece.style.top = `${Math.random() * (shuffledPieces.clientHeight - pieceSize)}px`;
                     shuffledPieces.appendChild(piece);
@@ -243,6 +245,7 @@
 
                 if (targetCell.classList.contains("puzzle-grid") || !targetCell.dataset.index) return;
 
+                // Se il pezzo viene dalla griglia, pulisci la cella originale
                 if (source === "grid") {
                     const parentCellIndex = e.dataTransfer.getData("parentCellIndex");
                     if (parentCellIndex) {
@@ -254,6 +257,7 @@
                     }
                 }
 
+                // Se la cella target ha già un pezzo, scambiali
                 if (targetCell.firstChild) {
                     const existingPiece = targetCell.firstChild;
                     const parentCellIndex = e.dataTransfer.getData("parentCellIndex");
@@ -264,6 +268,7 @@
                             placePieceInCell(existingPiece, parentCell);
                         }
                     } else {
+                        // Se non c'è una cella originale (dovrebbe essere impossibile)
                         existingPiece.style.left = `${Math.random() * (shuffledPieces.clientWidth - pieceSize)}px`;
                         existingPiece.style.top = `${Math.random() * (shuffledPieces.clientHeight - pieceSize)}px`;
                         shuffledPieces.appendChild(existingPiece);
@@ -275,6 +280,7 @@
             });
 
             function placePieceInCell(piece, cell) {
+                // Rimuovi il pezzo dalla posizione precedente
                 if (piece.parentElement === puzzleGrid) {
                     const prevCell = piece.parentElement;
                     if (prevCell !== cell) {
@@ -283,12 +289,14 @@
                     }
                 }
                 
+                // Posiziona il pezzo nella nuova cella
                 piece.style.position = 'absolute';
                 piece.style.left = `${cell.offsetLeft}px`;
                 piece.style.top = `${cell.offsetTop}px`;
                 cell.appendChild(piece);
                 cell.dataset.pieceIndex = piece.dataset.index;
                 
+                // Aggiorna la mappa dei pezzi piazzati correttamente
                 placedPieces.set(parseInt(piece.dataset.index), cell.dataset.index === piece.dataset.index);
                 
                 checkWinCondition();
