@@ -41,8 +41,6 @@ The user interface consists of several static pages, each with a specific purpos
 
 *   **Styles and Assets**:
     *   `style.css`: Centralized stylesheet that defines the design, animations, and ensures a consistent user experience across all pages.
-    *   `assets/`: Folder containing all graphic resources such as images, icons, and other media files.
-
 ---
 
 ## 🔐 Final Thoughts
