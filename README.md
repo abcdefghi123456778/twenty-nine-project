@@ -14,27 +14,6 @@ Key features include:
 *   **Interactive games** like Memory and various puzzles to have fun together.
 
 ---
-
-## 📁 Project Structure
-
-The project is organized in the following structure for a clear separation between frontend and backend:
-project-root/
-├── backend/
-│   ├── package.json
-│   └── server.js
-├── frontend/
-│   ├── index.html
-│   ├── galleria.html
-│   ├── memory.html
-│   ├── puzzle_1.html
-│   ├── puzzle_2.html
-│   ├── ... (altri puzzle)
-│   ├── assets/
-│   │   └── (immagini, icone, ecc.)
-│   └── style.css
-└── README.md
----
-
 ## 🖥️ Technical Details
 
 ### Backend (Node.js & Express)
